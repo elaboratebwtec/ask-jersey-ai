@@ -1,0 +1,174 @@
+<!DOCTYPE html> <html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ask Jersey!</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+    integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="flex flex-col min-h-screen antialiased">
+
+  <header class="w-full header-gradient py-5 sm:py-6 lg:py-8 shadow-md">
+    <h1 class="text-white text-2xl sm:text-3xl lg:text-4xl font-bold text-center tracking-tight px-4">
+      Ask Jersey!
+    </h1>
+  </header>
+
+  <main id="mainContent" class="flex-1 w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-12 max-w-screen-xl mx-auto">
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+
+      <section class="lg:col-span-2 bg-white rounded-2xl card-shadow-lg p-4 sm:p-6 lg:p-10 space-y-6">
+        <p class="text-gray-700 text-center text-base sm:text-lg leading-relaxed">
+          Discover Jersey like never before with your personal guide. Ask anything!
+        </p>
+
+        <textarea
+          id="question"
+          rows="4"
+          class="w-full border border-gray-300 rounded-xl p-3 sm:p-4 text-gray-900 text-base sm:text-lg focus:ring-2 focus:ring-offset-2 focus:ring-red-500 outline-none transition duration-150 ease-in-out placeholder-gray-500"
+          placeholder="e.g., What are the best beaches for families?"
+          aria-label="Your question about Jersey"
+        ></textarea>
+
+        <button
+          id="askButton"
+          onclick="askQuestion()"
+          class="relative w-full flex items-center justify-center button-gradient text-white text-base sm:text-lg font-semibold py-3 px-5 sm:py-4 sm:px-6 rounded-xl shadow-md transition transform active:scale-[0.98] lg:hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 disabled:opacity-60 disabled:cursor-not-allowed"
+          aria-label="Ask your question"
+        >
+          <span id="buttonText" class="mr-2 sm:mr-3">Let's Go!</span>
+          <i id="buttonIcon" class="fas fa-paper-plane transition-opacity"></i>
+          <div id="spinner" class="spinner hidden absolute right-4 sm:right-5"></div>
+        </button>
+
+        <div class="pt-6 sm:pt-8 border-t border-gray-200">
+          <h2 class="flex items-center text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 mb-4">
+            <i class="fas fa-lightbulb text-red-600 mr-2 sm:mr-3 text-xl sm:text-2xl"></i>Answer
+          </h2>
+          <div
+            id="answer"
+            class="min-h-[100px] lg:min-h-[120px] bg-gray-50 border border-gray-200 rounded-xl p-4 sm:p-5 lg:p-6 text-gray-700 text-sm sm:text-base leading-relaxed transition-opacity duration-300"
+            aria-live="polite" aria-busy="false" >
+            <span class="italic text-gray-500">Your answer will appear here...</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="space-y-8 lg:space-y-10">
+
+        <div class="bg-white rounded-2xl card-shadow p-4 sm:p-6">
+            <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                <i class="fas fa-info-circle text-blue-500 mr-2"></i>Jersey Insights
+            </h3>
+            <div class="space-y-2 text-xs sm:text-sm text-gray-700">
+                <div class="insight-item">
+                    <i class="fas fa-star text-yellow-500"></i>
+                    <span>Fun Fact: Jersey has one of the largest tidal ranges in the world!</span>
+                </div>
+                <div class="insight-item">
+                      <i class="fas fa-cloud-sun text-orange-500"></i>
+                      <span>Weather: Currently sunny, around 18°C.</span>
+                </div>
+                <div class="insight-item">
+                      <i class="fas fa-fire text-red-500"></i>
+                      <span>Popular: "What are the opening times for Jersey War Tunnels?"</span>
+                  </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl card-shadow p-4 sm:p-6 py-6">
+            <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+              <i class="fas fa-bolt text-yellow-500 mr-2"></i>Quick Actions
+            </h3>
+            <div id="quickActionsContainer" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <button id="quickActionBus" data-question="What are the current bus schedules in Jersey?" class="quick-action-btn py-3 px-3 bg-red-50 text-red-700 rounded-lg flex items-center justify-center text-xs sm:text-sm font-medium hover:bg-red-100 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500" aria-label="Ask about bus times">
+                <i class="fas fa-bus mr-2"></i>Bus Times
+              </button>
+              <button id="quickActionGym" data-question="Where can I find gyms in Jersey?" class="quick-action-btn py-3 px-3 bg-blue-50 text-blue-700 rounded-lg flex items-center justify-center text-xs sm:text-sm font-medium hover:bg-blue-100 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500" aria-label="Ask about gyms">
+                <i class="fas fa-dumbbell mr-2"></i>Gyms
+              </button>
+              <button id="quickActionFerry" data-question="Tell me about ferry services to and from Jersey." class="quick-action-btn py-3 px-3 bg-blue-50 text-blue-700 rounded-lg flex items-center justify-center text-xs sm:text-sm font-medium hover:bg-blue-100 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500" aria-label="Ask about ferry info">
+                <i class="fas fa-ship mr-2"></i>Ferry Info
+              </button>
+              <button id="quickActionFlights" data-question="Are there flights to Jersey today?" class="quick-action-btn py-3 px-3 bg-indigo-50 text-indigo-700 rounded-lg flex items-center justify-center text-xs sm:text-sm font-medium hover:bg-indigo-100 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500" aria-label="Ask about flights">
+                <i class="fas fa-plane mr-2"></i>Flights
+              </button>
+              <button id="quickActionWeather" data-question="What's the weather forecast for today in Jersey?" class="quick-action-btn py-3 px-3 bg-orange-50 text-orange-700 rounded-lg flex items-center justify-center text-xs sm:text-sm font-medium hover:bg-orange-100 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-orange-500" aria-label="Ask about weather">
+                <i class="fas fa-cloud-sun mr-2"></i>Weather
+              </button>
+                <button id="quickActionTaxi" data-question="How can I book a taxi in Jersey?" class="quick-action-btn py-3 px-3 bg-yellow-50 text-yellow-700 rounded-lg flex items-center justify-center text-xs sm:text-sm font-medium hover:bg-yellow-100 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-yellow-500" aria-label="Ask about taxis">
+                <i class="fas fa-taxi mr-2"></i>Taxi
+              </button>
+              <button id="quickActionAccommodation" data-question="Where can I find accommodation options in Jersey?" class="quick-action-btn col-span-2 lg:col-span-1 py-3 px-3 bg-red-50 text-red-700 rounded-lg flex items-center justify-center text-xs sm:text-sm font-medium hover:bg-red-100 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500" aria-label="Ask about accommodation">
+                <i class="fas fa-bed mr-2"></i>Accommodation
+              </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl card-shadow p-4 sm:p-6">
+          <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 flex items-center">
+              <i class="fas fa-history text-blue-500 mr-2"></i>History
+            </h3>
+          <div id="historyContainer" role="log" aria-live="polite" class="border border-blue-200 rounded-lg p-3 sm:p-4 bg-blue-50 overflow-y-auto max-h-48 sm:max-h-60 space-y-2 sm:space-y-3">
+            <p id="noHistory" class="text-sm text-gray-500 italic">No chat history yet.</p>
+            </div>
+          <button id="clearHistoryBtn" class="mt-3 text-xs text-blue-600 hover:text-blue-800 hover:underline focus:outline-none focus:ring-1 focus:ring-blue-500 rounded">Clear History</button>
+        </div>
+      </aside>
+    </div>
+
+    <section id="exploreFeaturesSection" class="mt-12 lg:mt-20">
+      <h2 class="text-2xl lg:text-3xl font-bold text-center text-gray-900 mb-6 sm:mb-8 lg:mb-10">
+        Explore Features
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+        <div class="feature-card-btn p-5 lg:p-6 rounded-xl bg-gradient-to-br from-red-500 to-red-600 text-white card-shadow lg:hover:-translate-y-1 transition transform duration-200 ease-in-out active:scale-[0.97]"
+              data-question="What are Jersey's must-see attractions and best spots for sunrise/sunset?"
+              role="button" tabindex="0" aria-label="Ask about tourism and living">
+          <div class="flex justify-center mb-3 sm:mb-4"><i class="fas fa-map-signs text-3xl lg:text-4xl opacity-80"></i></div>
+          <h3 class="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2 text-center">Tourism, Relocation & Living Guide</h3>
+          <p class="text-center text-xs sm:text-sm opacity-90">Attractions, events, moving tips, local life.</p>
+        </div>
+        <div class="feature-card-btn p-5 lg:p-6 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white card-shadow lg:hover:-translate-y-1 transition transform duration-200 ease-in-out active:scale-[0.97]"
+              data-question="How do I file and pay taxes in Jersey, and what is social security?"
+              role="button" tabindex="0" aria-label="Ask about government services">
+          <div class="flex justify-center mb-3 sm:mb-4"><i class="fas fa-landmark-flag text-3xl lg:text-4xl opacity-80"></i></div>
+          <h3 class="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2 text-center">Government Services Assistant</h3>
+          <p class="text-center text-xs sm:text-sm opacity-90">Taxes, permits, forms, fees, appointments.</p>
+        </div>
+        <div class="feature-card-btn p-5 lg:p-6 rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white card-shadow lg:hover:-translate-y-1 transition transform duration-200 ease-in-out active:scale-[0.97]"
+              data-question="What sectors pay well in Jersey, where can I find jobs, and how do I apply?"
+              role="button" tabindex="0" aria-label="Ask about career and business">
+          <div class="flex justify-center mb-3 sm:mb-4"><i class="fas fa-user-tie text-3xl lg:text-4xl opacity-80"></i></div>
+          <h3 class="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2 text-center">Island Career & Business</h3>
+          <p class="text-center text-xs sm:text-sm opacity-90">Resumes, jobs, interviews, grants, networking.</p>
+        </div>
+        <div class="feature-card-btn p-5 lg:p-6 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white card-shadow lg:hover:-translate-y-1 transition transform duration-200 ease-in-out active:scale-[0.97]"
+              data-question="Recommend good restaurants (dinner/all-day) and compare gym membership costs."
+              role="button" tabindex="0" aria-label="Ask about lifestyle concierge">
+          <div class="flex justify-center mb-3 sm:mb-4"><i class="fas fa-concierge-bell text-3xl lg:text-4xl opacity-80"></i></div>
+          <h3 class="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2 text-center">Lifestyle Concierge</h3>
+          <p class="text-center text-xs sm:text-sm opacity-90">Gyms, dining, salons, transport, fuel.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="w-full bg-gray-100 border-t border-gray-200 py-4 sm:py-5 mt-10 lg:mt-12 text-center text-gray-600 text-xs sm:text-sm">
+    © 2025 Peter Temidayo Akogun · Ask Jersey!
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</body>
+</html>

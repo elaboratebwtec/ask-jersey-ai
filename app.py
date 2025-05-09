@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, Blueprint
+from flask import Flask, jsonify, Blueprint, render_template
 
 # Initialize the Flask application
 app = Flask(__name__)
@@ -23,6 +23,12 @@ app.register_blueprint(api_bp)
 
 # This is your /ping route to check if the server is alive.
 # It returns a JSON response.
+
+# NEW ROUTE to serve the HTML page
+@app.route('/')
+def home():
+    return render_template('index.html')
+
 @app.route("/ping")
 def ping():
     return jsonify({"status": "alive", "message": "pong"})
