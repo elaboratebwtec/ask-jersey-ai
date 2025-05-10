@@ -64,8 +64,7 @@ function addHistoryEntry(question, answerHtml, isoTimestamp, isNewEntry) {
         </p>
         <p class="text-[10px] sm:text-xs text-gray-500 mt-1">${timeAgo}</p>
     `;
-
-    const loadHistoryItem = () => {
+  const loadHistoryItem = () => {
         qIn.value = question;
         ans.innerHTML = answerHtml;
         ans.classList.remove('italic', 'text-red-600');
@@ -118,7 +117,7 @@ function escapeHtml(unsafe) {
          .replace(/'/g, "&#039;");
 }
 
-  function formatTimeAgo(isoTimestamp) {
+function formatTimeAgo(isoTimestamp) {
     const date = new Date(isoTimestamp);
     const now = new Date();
     const secondsPast = (now.getTime() - date.getTime()) / 1000;
@@ -130,6 +129,7 @@ function escapeHtml(unsafe) {
     if (dayDiff < 7) return `${dayDiff}d ago`;
     return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
+// Removed one extra '}' that was here in your pasted code
 
 // --- Core Functionality ---
 async function askQuestion() {
@@ -143,26 +143,59 @@ async function askQuestion() {
   btn.classList.add('opacity-60', 'cursor-not-allowed');
   spinner.classList.remove('hidden');
   icon.style.opacity='0';
+  if (buttonTextSpan) buttonTextSpan.textContent = "Thinking..."; // Update button text
   ans.innerHTML = '<span class="italic text-gray-500">Thinking...</span>';
   ans.classList.add('loading-pulse');
   ans.setAttribute('aria-busy', 'true');
   ans.classList.remove('text-red-600');
 
   try {
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
-    // Updated simulated answer to use green text for the question part
-    const simulatedAnswerHtml = `<p class="font-semibold text-green-700 mb-2">Simulated Answer for: "${escapeHtml(questionText)}"</p><p>This is a placeholder response demonstrating how the answer area can be populated. In a real application, this would contain the actual information retrieved based on your question about Jersey.</p>`;
-    ans.innerHTML = simulatedAnswerHtml;
+    // --- THIS IS THE NEW PART: Making a real API call ---
+    const response = await fetch('/api/query', { // Calls your Flask backend
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ question: questionText }),
+    });
+
+    if (!response.ok) {
+      // Try to get error message from backend if available
+      let errorMsg = `HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.error || errorData.message || errorMsg;
+      } catch (e) {
+        // Ignore if response is not JSON
+      }
+      throw new Error(errorMsg);
+    }
+
+    const data = await response.json();
+    // Ensure answer is treated as text and then potentially rendered as HTML if it's meant to be.
+    // For security, if data.answer is plain text, escape it. If it's pre-formatted HTML from a trusted source, use as is.
+    // The current backend sends plain text, so escapeHtml and then replace newlines.
+    const answerText = data.answer || "Sorry, I could not find an answer.";
+    const answerHtml = escapeHtml(answerText).replace(/\n/g, '<br>');
+    
+    ans.innerHTML = `<p>${answerHtml}</p>`; // Display the answer
+                                        // You might want to add source here too if your API returns it:
+                                        // if (data.source) {
+                                        //   ans.innerHTML += `<p class="text-xs text-gray-500 mt-2">Source: ${escapeHtml(data.source)}</p>`;
+                                        // }
     ans.classList.remove('italic');
-    saveToHistory(questionText, simulatedAnswerHtml);
+    saveToHistory(questionText, ans.innerHTML); // Save the HTML version of the answer to history
+    // --- END OF NEW PART ---
+
   } catch(e) {
     console.error("Error asking question:", e);
-    ans.innerHTML = `<span class="font-semibold text-red-600">⚠️ Error:</span> <span class="text-gray-700">Could not get an answer. Please try again later.</span>`;
+    ans.innerHTML = `<span class="font-semibold text-red-600">⚠️ Error:</span> <span class="text-gray-700">${e.message || "Could not get an answer. Please try again later."}</span>`;
   } finally {
     btn.disabled = false;
     btn.classList.remove('opacity-60', 'cursor-not-allowed');
     spinner.classList.add('hidden');
     icon.style.opacity='1';
+    if (buttonTextSpan) buttonTextSpan.textContent = "Let's Go!"; // Reset button text
     ans.classList.remove('loading-pulse');
     ans.setAttribute('aria-busy', 'false');
     // qIn.value = ''; // Optional: Clear input
@@ -198,7 +231,7 @@ exploreFeaturesSection.addEventListener('keydown', (event) => {
         event.preventDefault();
         qIn.value = card.dataset.question;
         qIn.focus();
-     }
+   }
 });
 
 // Ensure the clear history button listener is correctly attached
@@ -219,9 +252,9 @@ document.addEventListener('DOMContentLoaded', () => {
         buttonTextSpan.textContent = "Let's Go!";
     }
 
-    // Re-check attachment just in case
-    // The clearHistoryBtn event listener is already attached above,
-    // but if it were conditional or complex, this is a good place for a robust check.
+    // Re-check attachment just in case for clearHistoryBtn if it wasn't found initially
+    // However, the above `if (clearHistoryBtn)` handles it well.
+    // This block might be redundant or could be removed if the first check is sufficient.
     if (clearHistoryBtn && !clearHistoryBtn._eventAttached) { // Using a custom property to track
          clearHistoryBtn.addEventListener('click', clearHistory);
          clearHistoryBtn._eventAttached = true; // Mark as attached

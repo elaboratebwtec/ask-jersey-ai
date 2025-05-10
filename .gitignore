@@ -13,3 +13,4 @@ Thumbs.db
 # IDE-specific (optional, but good practice)
 .vscode/
 .idea/
+db_chroma/
